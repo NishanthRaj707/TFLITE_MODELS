@@ -6,10 +6,10 @@ A curated collection of end-to-end TinyML neural network models built with **Ten
 
 ## 📌 Repository Overview
 
-This repository demonstrates the complete lifecycle of embedded machine learning applications across different problem domains (regression and classification):
+This repository demonstrates the complete lifecycle of embedded machine learning applications across different problem domains (regression and classification — binary and multi-class):
 1. **Problem Formulation & Synthetic Data Generation** with realistic Gaussian sensor noise.
 2. **Keras Sequential Model Architectures** designed for ultra-low memory footprints.
-3. **Model Compilation & Training** using task-specific loss functions (MSE, Sparse Categorical Cross-Entropy).
+3. **Model Compilation & Training** using task-specific loss functions (MSE, Binary Cross-Entropy, Sparse Categorical Cross-Entropy).
 4. **Full INT8 Post-Training Quantization (PTQ)** with representative dataset calibration.
 5. **Serialization** into compact TensorFlow Lite FlatBuffers (`.tflite`).
 6. **C Header Generation** (`.h`) containing static byte arrays for direct compilation into embedded C++ firmware.
@@ -18,33 +18,14 @@ This repository demonstrates the complete lifecycle of embedded machine learning
 
 ## 📁 Projects in This Repository
 
-This workspace contains 3 dedicated TinyML projects:
+This workspace contains 4 dedicated TinyML projects:
 
 | Project Folder | Task | Description | Architecture | Quantization | Output Artifacts |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **[`1_Linearmodel/`](./1_Linearmodel)** | Regression | Fits the linear equation $y = 3x + 1$ | 1 Input $\to$ Dense(16) $\to$ 1 Output (49 params) | Full INT8 | `model.tflite`<br>`model_data.h` |
 | **[`2_SineModel/`](./2_SineModel)** | Regression | Approximates non-linear sine wave $y = \sin(x)$ | 1 Input $\to$ Dense(16) $\to$ Dense(16) $\to$ 1 Output (321 params) | Full INT8 | `sine.tflite`<br>`sine_model.h.h` |
 | **[`3_MultiClassification/`](./3_MultiClassification)** | Multi-Class Classification | 6-axis device orientation from 3D accelerometer data | 3 Inputs $\to$ Dense(16) $\to$ 6 Outputs (166 params) | Full INT8 | `mcc_model.tflite`<br>`mcc_model.h` |
-
----
-
-## 📊 Architectural & Pipeline Comparison Matrix
-
-| Attribute | `1_Linearmodel` | `2_SineModel` | `3_MultiClassification` |
-| :--- | :--- | :--- | :--- |
-| **Task Type** | 1D Linear Regression | 1D Non-Linear Regression | 3D Multi-Class Classification (6 classes) |
-| **Target Function / Classes** | $y = 3x + 1 + \epsilon$ | $y = \sin(x) + \epsilon$ | +Z, -Z, +Y, -Y, +X, -X (Device orientations) |
-| **Input Shape & Domain** | 1D: $x \in [-10.0, 10.0]$ | 1D: $x \in [0, 2\pi]$ | 3D: $[A_x, A_y, A_z]$ accelerometer vector |
-| **Output Shape & Type** | 1 scalar (continuous) | 1 scalar (continuous) | 6 class logits (discrete state) |
-| **Dataset Size** | 1,000 synthetic samples | 2,000 synthetic samples | 3,000 synthetic samples (500 / class) |
-| **Model Topology** | `Input(1)` $\to$ `Dense(16, relu)` $\to$ `Dense(1)` | `Input(1)` $\to$ `Dense(16, relu)` $\to$ `Dense(16, relu)` $\to$ `Dense(1)` | `Input(3)` $\to$ `Dense(16, relu)` $\to$ `Dense(6)` |
-| **Trainable Parameters** | **49 parameters** | **321 parameters** | **166 parameters** |
-| **Loss Function** | Mean Squared Error (`mse`) | Mean Squared Error (`mse`) | Sparse Categorical Cross-Entropy |
-| **Training Epochs** | 200 epochs | 250 epochs | 150 epochs |
-| **Quantization Scheme** | Full Integer PTQ (`int8` I/O) | Full Integer PTQ (`int8` I/O) | Full Integer PTQ (`int8` I/O) |
-| **TFLite FlatBuffer Size** | **2,232 bytes** | **3,424 bytes** | **2,496 bytes** |
-| **C Array Identifier** | `g_model` (`g_model_len = 2232`) | `sine_mod` (`sine_mod_len = 3424`) | `g_model` (`g_model_len = 2496`) |
-| **Exported Header** | `model_data.h` | `sine_model.h.h` | `mcc_model.h` |
+| **[`4_BinaryClassification/`](./4_BinaryClassification)** | Binary Classification | Positive vs. negative 3D accelerometer orientation | 3 Inputs $\to$ Dense(16) $\to$ Dense(6) $\to$ 1 Output (199 params) | Full INT8 | `binary_model.tflite`<br>`binary_model.h` |
 
 ---
 
@@ -75,11 +56,16 @@ All models apply full integer post-training quantization to maximize runtime eff
 │   ├── sine_model.py           # Training, validation, INT8 PTQ, and C export script
 │   ├── sine.tflite             # INT8 FlatBuffer model (3,424 bytes)
 │   └── sine_model.h.h          # Exported C byte array header (sine_mod)
-└── 3_MultiClassification/      # Project 3: 6-axis spatial orientation classification
-    ├── README.md               # Abstract and summary for 3_MultiClassification
-    ├── mcc.py                  # Training, INT8 PTQ, and C export script
-    ├── mcc_model.tflite        # INT8 FlatBuffer model (2,496 bytes)
-    └── mcc_model.h             # Exported C byte array header (g_model)
+├── 3_MultiClassification/      # Project 3: 6-axis spatial orientation classification
+│   ├── README.md               # Abstract and summary for 3_MultiClassification
+│   ├── mcc.py                  # Training, INT8 PTQ, and C export script
+│   ├── mcc_model.tflite        # INT8 FlatBuffer model (2,496 bytes)
+│   └── mcc_model.h             # Exported C byte array header (g_model)
+└── 4_BinaryClassification/     # Project 4: Binary positive/negative orientation classification
+    ├── README.md               # Abstract and summary for 4_BinaryClassification
+    ├── binary_model.py         # Training, INT8 PTQ, and C export script
+    ├── binary_model.tflite     # INT8 FlatBuffer model
+    └── binary_model.h          # Exported C byte array header (b_model)
 ```
 
 ---
