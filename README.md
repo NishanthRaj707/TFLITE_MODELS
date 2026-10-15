@@ -8,7 +8,7 @@ A curated collection of end-to-end TinyML neural network models built with **Ten
 
 This repository demonstrates the complete lifecycle of embedded machine learning applications across different problem domains (regression and classification — binary and multi-class):
 1. **Problem Formulation & Synthetic Data Generation** with realistic Gaussian sensor noise.
-2. **Keras Sequential Model Architectures** designed for ultra-low memory footprints.
+2. **Keras Sequential Model Architectures** (Dense MLP and 1D CNN) designed for ultra-low memory footprints.
 3. **Model Compilation & Training** using task-specific loss functions (MSE, Binary Cross-Entropy, Sparse Categorical Cross-Entropy).
 4. **Full INT8 Post-Training Quantization (PTQ)** with representative dataset calibration.
 5. **Serialization** into compact TensorFlow Lite FlatBuffers (`.tflite`).
@@ -18,7 +18,7 @@ This repository demonstrates the complete lifecycle of embedded machine learning
 
 ## 📁 Projects in This Repository
 
-This workspace contains 4 dedicated TinyML projects:
+This workspace contains 5 dedicated TinyML projects:
 
 | Project Folder | Task | Description | Architecture | Quantization | Output Artifacts |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -26,6 +26,7 @@ This workspace contains 4 dedicated TinyML projects:
 | **[`2_SineModel/`](./2_SineModel)** | Regression | Approximates non-linear sine wave $y = \sin(x)$ | 1 Input $\to$ Dense(16) $\to$ Dense(16) $\to$ 1 Output (321 params) | Full INT8 | `sine.tflite`<br>`sine_model.h.h` |
 | **[`3_MultiClassification/`](./3_MultiClassification)** | Multi-Class Classification | 6-axis device orientation from 3D accelerometer data | 3 Inputs $\to$ Dense(16) $\to$ 6 Outputs (166 params) | Full INT8 | `mcc_model.tflite`<br>`mcc_model.h` |
 | **[`4_BinaryClassification/`](./4_BinaryClassification)** | Binary Classification | Positive vs. negative 3D accelerometer orientation | 3 Inputs $\to$ Dense(16) $\to$ Dense(6) $\to$ 1 Output (199 params) | Full INT8 | `binary_model.tflite`<br>`binary_model.h` |
+| **[`5_CNN_1D/`](./5_CNN_1D)** | Multi-Class (CNN) | Gesture recognition from raw 50-step 3-axis IMU windows (IDLE / WAVE / PUNCH) | Input(50,3) $\to$ Conv1D(8) $\to$ MaxPool $\to$ GAP $\to$ Dense(3) | Full INT8 | `cnn.tflite`<br>`cnn_model.h` |
 
 ---
 
@@ -62,10 +63,15 @@ All models apply full integer post-training quantization to maximize runtime eff
 │   ├── mcc_model.tflite        # INT8 FlatBuffer model (2,496 bytes)
 │   └── mcc_model.h             # Exported C byte array header (g_model)
 └── 4_BinaryClassification/     # Project 4: Binary positive/negative orientation classification
-    ├── README.md               # Abstract and summary for 4_BinaryClassification
-    ├── binary_model.py         # Training, INT8 PTQ, and C export script
-    ├── binary_model.tflite     # INT8 FlatBuffer model
-    └── binary_model.h          # Exported C byte array header (b_model)
+│   ├── README.md               # Abstract and summary for 4_BinaryClassification
+│   ├── binary_model.py         # Training, INT8 PTQ, and C export script
+│   ├── binary_model.tflite     # INT8 FlatBuffer model
+│   └── binary_model.h          # Exported C byte array header (b_model)
+└── 5_CNN_1D/                   # Project 5: 1D CNN gesture classification (IDLE / WAVE / PUNCH)
+    ├── README.md               # Abstract and summary for 5_CNN_1D
+    ├── cnn.py                  # Synthetic IMU data generation, CNN training, INT8 PTQ, and C export script
+    ├── cnn.tflite              # INT8 FlatBuffer model
+    └── cnn_model.h             # Exported C byte array header (cnn_model)
 ```
 
 ---
